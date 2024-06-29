@@ -1,4 +1,5 @@
 import gym
+import stable_baselines3
 import argparse
 from stable_baselines3 import PPO
 from env.custom_hopper import *
@@ -12,11 +13,9 @@ import time
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train', default='source', type=str, help='Training environment')
-    parser.add_argument('--validation', default='source', type=str, help='Validation environment')
     parser.add_argument('--render', default=False, action='store_true', help='Render the simulator')
-    parser.add_argument('--val-episodes', default=10, type=int, help='Number of validation episodes')
     parser.add_argument('--n-episodes', default=10750, type=int, help='Number of training episodes')
+    parser.add_argument('--val-episodes', default=10, type=int, help='Number of validation episodes')
     parser.add_argument('--device', default='cpu', type=str, help='network device [cpu, cuda]')
 
     return parser.parse_args()
@@ -25,7 +24,7 @@ args = parse_args()
 N_ENVS = os.cpu_count()
 ENV_EPS = int(np.ceil(args.n_episodes/N_ENVS))
 
-# Callback useful to evaluate training convergence  
+# Callback useful to evaluate training convergence
 class CustomEvalCallback(BaseCallback):
     def __init__(self, eval_env, n_eval_episodes=args.val_episodes, log_path=None, verbose=1):
         super(CustomEvalCallback, self).__init__(verbose)
@@ -38,7 +37,7 @@ class CustomEvalCallback(BaseCallback):
             os.makedirs(os.path.dirname(self.log_path), exist_ok=True)
             with open(self.log_path, mode='w', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(["Episode", "Reward"])
+                writer.writerow(["Episode", "Return"])
 
     def _on_step(self) -> bool:
         # Check if an episode is done
@@ -66,34 +65,22 @@ class CustomEvalCallback(BaseCallback):
                 writer = csv.writer(file)
                 writer.writerow([self.episode_count, mean_return])
 
-
 def main():
-    if args.train == 'source':
-        train_env = make_vec_env('CustomHopper-source-v0', n_envs=N_ENVS, vec_env_cls=DummyVecEnv)
-    else:
-        train_env = make_vec_env('CustomHopper-target-v0', n_envs=N_ENVS, vec_env_cls=DummyVecEnv)
-    
-    if args.validation == 'source':
-        val_env = gym.make('CustomHopper-source-v0')
-    else:
-        val_env = gym.make('CustomHopper-target-v0')
-
+    train_env = make_vec_env('CustomHopper-source-random-v0', n_envs=N_ENVS, vec_env_cls=DummyVecEnv)
+    target_eval_env = gym.make('CustomHopper-target-v0')
     log_dir = 'log'
     os.makedirs(log_dir, exist_ok=True)
-    log_path = os.path.join(log_dir, 'PPO_validation.csv')
+    log_path_target = os.path.join(log_dir, 'PPO_TrainOnSourceWithUDR_ValOnTarget.csv')
     stop_callback = StopTrainingOnMaxEpisodes(max_episodes=ENV_EPS, verbose=1) # Callback for stopping criteria
-    eval_callback = CustomEvalCallback(eval_env=val_env, 
-                                       n_eval_episodes=args.val_episodes, 
-                                       log_path= log_path) # Validation during training
-
-    callback_list = [stop_callback, eval_callback]
+    target_eval_callback = CustomEvalCallback(eval_env=target_eval_env, n_eval_episodes=args.eval_episodes, 
+                                              log_path= log_path_target)  # Validation during training
+    callback_list = [stop_callback, target_eval_callback]
     callback = CallbackList(callback_list)
-
     model = PPO('MlpPolicy', env=train_env, learning_rate=0.00025, gamma=0.99, verbose=1, device=args.device)
     start = time.time()
     model.learn(total_timesteps=1e9, callback=callback)
     end = time.time()
-    model.save('modelPPO')
+    model.save('ModelPPO_UDR')
     total_time = end - start
     print(f"Computational Time: {total_time}")
 
