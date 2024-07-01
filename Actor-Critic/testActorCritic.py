@@ -1,19 +1,19 @@
 """Test an RL agent on the OpenAI Gym Hopper environment"""
 import argparse
-
 import torch
 import gym
-
 from env.custom_hopper import *
 from agentActorCritic import Agent, ActorPolicy, CriticPolicy
 
 def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--actormodel', default='models/BestActorParamsModel_100mila.mdl', type=str, help='Actor path')
-    parser.add_argument('--device', default='cpu', type=str, help='network device [cpu, cuda]')
-    parser.add_argument('--render', default=False, action='store_true', help='Render the simulator')
-    parser.add_argument('--episodes', default=100, type=int, help='Number of test episodes')
-    return parser.parse_args()
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--actormodel', default='ActorModel.mdl', type=str, help='Actor path')
+	parser.add_argument('--criticmodel', default='CriticModel.mdl', type=str, help='Critic path')
+	parser.add_argument('--device', default='cpu', type=str, help='network device [cpu, cuda]')
+	parser.add_argument('--render', default=False, action='store_true', help='Render the simulator')
+	parser.add_argument('--episodes', default=100, type=int, help='Number of test episodes')
+	
+	return parser.parse_args()
 
 args = parse_args()
 
@@ -21,21 +21,19 @@ args = parse_args()
 def main():
 
 	env = gym.make('CustomHopper-source-v0')
-	# env = gym.make('CustomHopper-target-v0')
-
-	'''print('Action space:', env.action_space)
-	print('State space:', env.observation_space)
-	print('Dynamics parameters:', env.get_parameters())'''
 	
 	observation_space_dim = env.observation_space.shape[-1]
 	action_space_dim = env.action_space.shape[-1]
 
+	#initialize policy
 	APolicy = ActorPolicy(observation_space_dim, action_space_dim)
 	CPolicy = CriticPolicy(observation_space_dim, action_space_dim)
 
+	#load the train actor and critic models
 	APolicy.load_state_dict(torch.load(args.actormodel), strict=True)
-	CPolicy.load_state_dict(torch.load('models/BestCriticParamsModel_100mila.mdl'), strict=True)
+	CPolicy.load_state_dict(torch.load(args.criticmodel), strict=True)
 
+	#initialize the agent with the trained policy
 	agent = Agent(APolicy, CPolicy, device=args.device)
 
 	mean_return = 0

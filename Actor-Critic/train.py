@@ -110,51 +110,6 @@ def main():
     torch.save(best_critic_params, "BestCriticParamsModel_10mila.mdl")
     print(f"Best training iteration: {best_trainEpisode}, with reward: {best_reward}")
     
-    #plot_policy_convergence(AC_policy_convergence_log_file_path)
-    
-
-
-def plot_policy_convergence(AC_policy_convergence_log_file_path):
-    episodes = []
-    returns = []
-
-    # Read the CSV file
-    with open(AC_policy_convergence_log_file_path, mode='r') as AC_policy_convergence_log_file:
-        AC_policy_convergence_log_reader = csv.reader(AC_policy_convergence_log_file)
-        next(AC_policy_convergence_log_reader)  # Skip the header
-        for row in AC_policy_convergence_log_reader:
-            episodes.append(int(row[0]))
-            returns.append(float(row[1]))
-
-    # Convert lists to numpy arrays for convenience
-    episodes = np.array(episodes)
-    returns = np.array(returns)
-
-    # Calculate a running average for smoother visualization
-    window_size = 100
-    running_avg = np.convolve(returns, np.ones(window_size) / window_size, mode='valid')
-
-    # Plotting
-    plt.figure(figsize=(12, 6))
-    plt.plot(episodes, returns, label='Episode Return', color='blue', linewidth=0.85)
-    plt.plot(episodes[window_size-1:], running_avg, color='red', label='Moving Average', linewidth=2)
-
-    # Adding titles and labels
-    plt.title('Actor Critic Policy Convergence', fontsize=16)
-    plt.xlabel('Episode', fontsize=14)
-    plt.ylabel('Return', fontsize=14)
-
-    # Adding a legend
-    plt.legend(loc='upper left', fontsize=12)
-
-    # Adding a grid
-    plt.grid(True, linestyle='--', alpha=0.7)
-
-    # Enhancing the overall look
-    plt.style.use('seaborn-darkgrid')
-
-    plt.show()
-
 
 if __name__ == '__main__':
     main()

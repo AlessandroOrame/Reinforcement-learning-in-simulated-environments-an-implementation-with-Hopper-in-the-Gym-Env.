@@ -31,7 +31,7 @@ class ActorPolicy(torch.nn.Module):
         # Learned standard deviation for exploration at training time 
         self.sigma_activation = F.softplus
         init_sigma = 0.5
-        self.sigma = torch.nn.Parameter(torch.zeros(self.action_space)+init_sigma)
+        self.sigma = torch.nn.Parameter(torch.zeros(self.action_space) + init_sigma)
 
         self.init_weights()
 
@@ -114,7 +114,10 @@ class Agent(object):
 
 
     def update_policy(self):
+
+        # in general, the update is not made at each step but for a batch of steps
         steps = len(self.action_log_probs)
+        
         action_log_probs = torch.stack(self.action_log_probs, dim=0).to(self.train_device).squeeze(-1)
         rewards = torch.stack(self.rewards, dim=0).to(self.train_device).squeeze(-1)
         done = torch.Tensor(self.done).to(self.train_device)
