@@ -7,7 +7,7 @@ from copy import deepcopy
 
 import numpy as np
 import gym
-from gym import utils
+from gymnasium import utils
 from .mujoco_env import MujocoEnv
 
 class CustomHopper(MujocoEnv, utils.EzPickle):
@@ -51,7 +51,8 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         reward -= 1e-4 * np.square(a).sum()
  
         return ob, reward, done, {}
- 
+    
+
     def _get_obs(self):
         """Get current state"""
         # Current state observation
@@ -59,55 +60,45 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
             self.sim.data.qpos.flat[1:],
             self.sim.data.qvel.flat
         ])
- 
+
         # Position of the hopper (torso)
         hopper_pos = self.sim.data.get_body_xpos('torso')
- 
+
         # Position of the obstacle
         obstacle_pos = self.sim.data.get_body_xpos('obstacle')
-       
-        # Calculate distance from hopper to obstacle in the x-axis.
-        # (not a true distance, as it can be negative
-        # it can be seen as a relative position of the Hopper w.r.t the obstacle)
+        
+        # Calculate distance from hopper to obstacle in the x-axis
         distance_to_obstacle = obstacle_pos[0] - hopper_pos[0]
- 
+
         # Append this distance to the state observation
         return np.concatenate([state, [distance_to_obstacle]])
-   
-  
+    
+    
     def reset_model(self):
         """Reset the environment to a random initial state"""
         qpos = self.init_qpos + self.np_random.uniform(low=-.005, high=.005, size=self.model.nq)
         qvel = self.init_qvel + self.np_random.uniform(low=-.005, high=.005, size=self.model.nv)
-       
-        '''# Sample a new x position for the obstacle
+        
+        # Sample a new x position for the obstacle
         new_obstacle_x = self.np_random.uniform(low=3.5, high=4.5)
-       
+        
         # Get the obstacle body ID
         obstacle_body_id = self.sim.model.body_name2id('obstacle')
-       
+        
         # Get the current position of the obstacle
         obstacle_pos = self.sim.model.body_pos[obstacle_body_id].copy()
-       
+        
         # Update only the x-coordinate
         obstacle_pos[0] = new_obstacle_x
-       
+        
         # Set the new position of the obstacle
-        self.sim.model.body_pos[obstacle_body_id] = obstacle_pos'''
- 
-        obstacle_body_id = self.sim.model.body_name2id('obstacle')
-        obstacle_pos = self.sim.model.body_pos[obstacle_body_id].copy()
-        obstacle_pos[0] = 4
         self.sim.model.body_pos[obstacle_body_id] = obstacle_pos
- 
-        # Set the new state including the updated obstacle position
+
+        # Set the new state
         self.set_state(qpos, qvel)
-       
-        '''if self.random:
-            self.set_random_parameters()  # Apply randomization at the start of each episode'''
- 
+
         return self._get_obs()
-    
+
     def viewer_setup(self):
         self.viewer.cam.trackbodyid = 2
         self.viewer.cam.distance = self.model.stat.extent * 0.75
@@ -149,7 +140,7 @@ gym.envs.register(
 )
 
 gym.envs.register(
-        id="CustomHopper-source-v0",
+        id='CustomHopper-source-v0',
         entry_point="%s:CustomHopper" % __name__,
         max_episode_steps=500,
         kwargs={"domain": "source"}

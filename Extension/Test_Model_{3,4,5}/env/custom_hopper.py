@@ -4,10 +4,9 @@ domain randomization optimization.
     See more at: https://www.gymlibrary.dev/environments/mujoco/hopper/
 """
 from copy import deepcopy
-
 import numpy as np
 import gym
-from gym import utils
+from gymnasium import utils
 from .mujoco_env import MujocoEnv
 
 class CustomHopper(MujocoEnv, utils.EzPickle):
@@ -27,7 +26,7 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
     
     def step(self, a):
         """Step the simulation to the next timestep
- 
+
         Parameters
         ----------
         a : ndarray,
@@ -37,21 +36,15 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         self.do_simulation(a, self.frame_skip)
         posafter, height, ang = self.sim.data.qpos[0:3]
         alive_bonus = 1.0
+        reward = (posafter - posbefore) / self.dt
+        reward += alive_bonus
+        reward -= 1e-3 * np.square(a).sum()
         s = self.state_vector()
         done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all() and (height > .7) and (abs(ang) < .2))
         ob = self._get_obs()
-        distance = ob[-1]
-        if distance > 0:
-            reward = 0.2*(distance + 1) * (posafter - posbefore) / self.dt + 0.8 / (1 + distance) * (height)
-        else:
-            reward = (posafter - posbefore) / self.dt
-        reward += alive_bonus
-        if posafter >= self.sim.data.get_body_xpos('obstacle')[0] + 0.05:
-            reward += 100
-        reward -= 1e-4 * np.square(a).sum()
- 
+
         return ob, reward, done, {}
- 
+
     def _get_obs(self):
         """Get current state"""
         # Current state observation
@@ -59,55 +52,57 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
             self.sim.data.qpos.flat[1:],
             self.sim.data.qvel.flat
         ])
- 
-        # Position of the hopper (torso)
+
+        # Position of the hopper's torso
         hopper_pos = self.sim.data.get_body_xpos('torso')
- 
-        # Position of the obstacle
-        obstacle_pos = self.sim.data.get_body_xpos('obstacle')
-       
-        # Calculate distance from hopper to obstacle in the x-axis.
-        # (not a true distance, as it can be negative
-        # it can be seen as a relative position of the Hopper w.r.t the obstacle)
-        distance_to_obstacle = obstacle_pos[0] - hopper_pos[0]
- 
-        # Append this distance to the state observation
-        return np.concatenate([state, [distance_to_obstacle]])
-   
-  
+
+        # Position of the obstacles
+        obstacle1_pos = self.sim.data.get_body_xpos('obstacle1')
+        obstacle2_pos = self.sim.data.get_body_xpos('obstacle2')
+        obstacle3_pos = self.sim.data.get_body_xpos('obstacle3')
+        
+        # Calculate distances from hopper to obstacles in the x-axis
+        distance_to_obstacle1 = obstacle1_pos[0] - hopper_pos[0]
+        distance_to_obstacle2 = obstacle2_pos[0] - hopper_pos[0]
+        distance_to_obstacle3 = obstacle3_pos[0] - hopper_pos[0]
+
+        if distance_to_obstacle1 > -0.2:
+            distance = distance_to_obstacle1
+        elif distance_to_obstacle2 > -0.2:
+            distance = distance_to_obstacle2
+        else:
+            distance = distance_to_obstacle3
+        
+        # Append the distance to the state observation
+        return np.concatenate([state, [distance]]) #[distance]])
+
+
     def reset_model(self):
         """Reset the environment to a random initial state"""
         qpos = self.init_qpos + self.np_random.uniform(low=-.005, high=.005, size=self.model.nq)
         qvel = self.init_qvel + self.np_random.uniform(low=-.005, high=.005, size=self.model.nv)
-       
-        '''# Sample a new x position for the obstacle
-        new_obstacle_x = self.np_random.uniform(low=3.5, high=4.5)
-       
-        # Get the obstacle body ID
-        obstacle_body_id = self.sim.model.body_name2id('obstacle')
-       
-        # Get the current position of the obstacle
-        obstacle_pos = self.sim.model.body_pos[obstacle_body_id].copy()
-       
-        # Update only the x-coordinate
-        obstacle_pos[0] = new_obstacle_x
-       
-        # Set the new position of the obstacle
-        self.sim.model.body_pos[obstacle_body_id] = obstacle_pos'''
- 
-        obstacle_body_id = self.sim.model.body_name2id('obstacle')
-        obstacle_pos = self.sim.model.body_pos[obstacle_body_id].copy()
-        obstacle_pos[0] = 4
-        self.sim.model.body_pos[obstacle_body_id] = obstacle_pos
- 
+
+        # set obstacles positions
+        obstacle1_body_id = self.sim.model.body_name2id('obstacle1')
+        obstacle1_pos = self.sim.model.body_pos[obstacle1_body_id].copy()
+        obstacle1_pos[0] = 4
+        self.sim.model.body_pos[obstacle1_body_id] = obstacle1_pos
+
+        obstacle2_body_id = self.sim.model.body_name2id('obstacle2')
+        obstacle2_pos = self.sim.model.body_pos[obstacle2_body_id].copy()
+        obstacle2_pos[0] = 8.5
+        self.sim.model.body_pos[obstacle2_body_id] = obstacle2_pos
+
+        obstacle3_body_id = self.sim.model.body_name2id('obstacle3')
+        obstacle3_pos = self.sim.model.body_pos[obstacle3_body_id].copy()
+        obstacle3_pos[0] = 13
+        self.sim.model.body_pos[obstacle3_body_id] = obstacle3_pos
+
         # Set the new state including the updated obstacle position
         self.set_state(qpos, qvel)
-       
-        '''if self.random:
-            self.set_random_parameters()  # Apply randomization at the start of each episode'''
- 
+        
         return self._get_obs()
-    
+
     def viewer_setup(self):
         self.viewer.cam.trackbodyid = 2
         self.viewer.cam.distance = self.model.stat.extent * 0.75
@@ -149,9 +144,9 @@ gym.envs.register(
 )
 
 gym.envs.register(
-        id="CustomHopper-source-v0",
+        id='CustomHopper-source-v0',
         entry_point="%s:CustomHopper" % __name__,
-        max_episode_steps=500,
+        max_episode_steps=1000,
         kwargs={"domain": "source"}
 )
 
