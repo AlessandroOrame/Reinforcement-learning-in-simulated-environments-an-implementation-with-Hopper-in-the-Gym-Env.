@@ -13,11 +13,11 @@ from agentReinforce import Agent, Policy
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--n-episodes', default=50000, type=int, help='Number of training episodes') 
-    parser.add_argument('--val-every', default=1000, type=int, help='Validate model every <> episodes')
-	parser.add_argument('--val_episodes', default=10, type=int, help='Number of validation episodes')
-    parser.add_argument('--device', default='cpu', type=str, help='network device [cpu, cuda]')
+	parser = argparse.ArgumentParser() 
+	parser.add_argument('--device', default='cpu', type=str, help='network device [cpu, cuda]')
+	parser.add_argument('--n-episodes', default=50000, type=int, help='Number of training episodes')
+	parser.add_argument('--val-episodes', default=10, type=int, help='Number of validation episodes')
+	parser.add_argument('--val-every', default=1000, type=int, help='Validate model every <> episodes')
 	return parser.parse_args()
 
 args = parse_args()
