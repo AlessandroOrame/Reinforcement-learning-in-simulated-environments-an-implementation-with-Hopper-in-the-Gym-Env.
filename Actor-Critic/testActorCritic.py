@@ -10,7 +10,7 @@ def parse_args():
 	parser.add_argument('--actormodel', default='ActorModel.mdl', type=str, help='Actor path')
 	parser.add_argument('--criticmodel', default='CriticModel.mdl', type=str, help='Critic path')
 	parser.add_argument('--device', default='cpu', type=str, help='network device [cpu, cuda]')
-	parser.add_argument('--render', default=False, action='store_true', help='Render the simulator')
+	parser.add_argument('--render', default=True, action='store_true', help='Render the simulator')
 	parser.add_argument('--episodes', default=100, type=int, help='Number of test episodes')
 	
 	return parser.parse_args()
@@ -39,7 +39,7 @@ def main():
 	mean_return = 0
 	for episode in range(args.episodes):
 		done = False
-		test_reward = 0
+		test_return = 0
 		state = env.reset()
 
 		while not done:
@@ -51,10 +51,10 @@ def main():
 			if args.render:
 				env.render()
 
-			test_reward += reward
+			test_return += reward
 
-		print(f"Episode: {episode} | Return: {test_reward}")
-		mean_return += test_reward
+		print(f"Episode: {episode} | Return: {test_return}")
+		mean_return += test_return
 	
 	print(f"Average Return: {mean_return/args.episodes}")
 

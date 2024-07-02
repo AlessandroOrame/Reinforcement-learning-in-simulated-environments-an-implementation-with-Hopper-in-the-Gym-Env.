@@ -67,7 +67,7 @@ class CriticPolicy(torch.nn.Module):
         """
             Critic network
         """
-        # TASK 3: critic network for actor-critic algorithm
+        # Critic network for actor-critic algorithm
         self.fc1_critic = torch.nn.Linear(state_space, self.hidden)
         self.fc2_critic = torch.nn.Linear(self.hidden, self.hidden)
         self.fc3_critic_mean = torch.nn.Linear(self.hidden, 1)
@@ -115,7 +115,7 @@ class Agent(object):
 
     def update_policy(self):
 
-        # in general, the update is not made at each step but for a batch of steps
+        # In general, the update is not made at each step but for a batch of steps
         steps = len(self.action_log_probs)
         
         action_log_probs = torch.stack(self.action_log_probs, dim=0).to(self.train_device).squeeze(-1)

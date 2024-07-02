@@ -10,7 +10,7 @@ from gymnasium import utils
 from .mujoco_env import MujocoEnv
 
 class CustomHopper(MujocoEnv, utils.EzPickle):
-    def __init__(self, domain=None, random=False):
+    def __init__(self, domain=None):
         MujocoEnv.__init__(self, 4)
         utils.EzPickle.__init__(self)
 
@@ -44,6 +44,7 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         ob = self._get_obs()
 
         return ob, reward, done, {}
+
 
     def _get_obs(self):
         """Get current state"""
@@ -156,18 +157,3 @@ gym.envs.register(
         max_episode_steps=500,
         kwargs={"domain": "target"}
 )
-
-gym.envs.register(
-        id="CustomHopper-source-random-v0",
-        entry_point="%s:CustomHopper" % __name__,
-        max_episode_steps=500,
-        kwargs={"domain": "source", "random": True}
-)
-
-'''
-gym.envs.register(
-        id="CustomHopper-target-random-v0",
-        entry_point="%s:CustomHopper" % __name__,
-        max_episode_steps=500,
-        kwargs={"domain": "target", "random": True}
-)'''

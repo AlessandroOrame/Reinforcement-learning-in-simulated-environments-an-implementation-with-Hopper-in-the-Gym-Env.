@@ -44,6 +44,7 @@ def main():
     best_mean_reward = -np.inf
     best_params = None
     start = time.time()
+
     for params in param_combinations:
         param_dict = dict(zip(param_grid.keys(), params))
         print(f"Testing parameters: {param_dict}")
@@ -73,6 +74,7 @@ def main():
     print(f"Best mean reward: {best_mean_reward}")
 
 
+# Function for validation 
 def evaluate_model(model, env, n_episodes=100):
     all_rewards = []
     for _ in range(n_episodes):
@@ -80,7 +82,7 @@ def evaluate_model(model, env, n_episodes=100):
         state = env.reset()
         episode_rewards = 0
         while not done:
-            action, _ = model.predict(state, deterministic=True)
+            action, _ = model.predict(state, deterministic=True) # applied in a deterministic way
             state, reward, done, _ = env.step(action)
             episode_rewards += reward
         all_rewards.append(episode_rewards)

@@ -25,7 +25,7 @@ args = parse_args()
 # Directory for validation logs
 log_dir = 'log'
 os.makedirs(log_dir, exist_ok=True)
-Reinforce_log_file_path = os.path.join(log_dir, '5_Reinforce_policy_convergence.csv')
+Reinforce_log_file_path = os.path.join(log_dir, 'Reinforce_policy_convergence.csv')
 
 
 def main():

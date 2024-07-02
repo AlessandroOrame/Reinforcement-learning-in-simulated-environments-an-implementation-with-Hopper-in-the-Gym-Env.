@@ -17,8 +17,6 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--train', default='source', type=str, help='Training environment')
     parser.add_argument('--render', default=False, action='store_true', help='Render the simulator')
-    parser.add_argument('--n-episodes', default=1000000, type=int, help='Number of training episodes') # Re change numepisodes in 100000
-    parser.add_argument('--print-every', default=100, type=int, help='Print info every <> episodes')
     parser.add_argument('--device', default='cpu', type=str, help='network device [cpu, cuda]')
 
     return parser.parse_args()
@@ -35,9 +33,9 @@ def main():
     else:
         train_env = target_env
 
-    model = PPO('MlpPolicy', env=train_env, verbose=1, device='cpu')
+    model = PPO('MlpPolicy', env=train_env, learning_rate=0.00025, verbose=1, device='cpu')
     model.learn(total_timesteps=3000000)
-    model.save('Model_4')
+    model.save('model_4')
 
 
 if __name__ == '__main__':

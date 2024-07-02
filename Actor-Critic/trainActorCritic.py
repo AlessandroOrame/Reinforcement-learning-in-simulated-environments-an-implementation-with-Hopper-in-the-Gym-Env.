@@ -12,8 +12,8 @@ from agentActorCritic import Agent, ActorPolicy, CriticPolicy
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--n-episodes', default=10000, type=int, help='Number of training episodes')
-    parser.add_argument('--validate-every', default=10000, type=int, help='Print info every <> episodes')
+    parser.add_argument('--n-episodes', default=50000, type=int, help='Number of training episodes')
+    parser.add_argument('--validate-every', default=1000, type=int, help='Print info every <> episodes')
     parser.add_argument('--device', default='cpu', type=str, help='network device [cpu, cuda]')
 
     return parser.parse_args()
@@ -22,7 +22,7 @@ args = parse_args()
 
 log_dir = 'log'
 os.makedirs(log_dir, exist_ok=True)
-AC_policy_convergence_log_file_path = os.path.join(log_dir, 'ActorCritic_10mila.csv')
+AC_policy_convergence_log_file_path = os.path.join(log_dir, 'ActorCritic.csv')
 
 
 def main():
@@ -47,8 +47,8 @@ def main():
     best_trainEpisode = 0
     start_time= time.time()
 
-    # TASK 2 and 3: interleave data collection to policy updates
-
+    # Interleave data collection to policy updates
+    # Training loop
     for episode in range(args.n_episodes):
         done = False
         train_reward = 0
@@ -72,6 +72,8 @@ def main():
         if (episode+1)%args.validate_every == 0:
             
             val_rewards = np.zeros(10)
+
+            # Validation loop
             for val_episode in range(10):
                 val_done = False
                 test_reward = 0
@@ -103,11 +105,11 @@ def main():
     # Save the last weights values
     last_actor_params = agent.actor_policy.state_dict()
     last_critic_params = agent.critic_policy.state_dict()
-    torch.save(last_actor_params, 'LastActorModel_10mila.mdl')
-    torch.save(last_critic_params, 'LastCriticModel_10mila.mdl')
+    torch.save(last_actor_params, 'LastActorModel.mdl')
+    torch.save(last_critic_params, 'LastCriticModel.mdl')
 
-    torch.save(best_actor_params, "BestActorParamsModel_10mila.mdl")
-    torch.save(best_critic_params, "BestCriticParamsModel_10mila.mdl")
+    torch.save(best_actor_params, "BestActorParamsModel.mdl")
+    torch.save(best_critic_params, "BestCriticParamsModel.mdl")
     print(f"Best training iteration: {best_trainEpisode}, with reward: {best_reward}")
     
 

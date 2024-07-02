@@ -11,7 +11,7 @@ from gymnasium import utils
 from .mujoco_env import MujocoEnv
 
 class CustomHopper(MujocoEnv, utils.EzPickle):
-    def __init__(self, domain=None, random=False):
+    def __init__(self, domain=None):
         MujocoEnv.__init__(self, 4)
         utils.EzPickle.__init__(self)
 
@@ -41,6 +41,8 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all() and (height > .7) and (abs(ang) < .2))
         ob = self._get_obs()
         distance = ob[-1]
+
+        # Engineered reward
         if distance > 0:
             reward = 0.2*(distance + 1) * (posafter - posbefore) / self.dt + 0.8 / (1 + distance) * (height)
         else:
@@ -67,7 +69,9 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         # Position of the obstacle
         obstacle_pos = self.sim.data.get_body_xpos('obstacle')
         
-        # Calculate distance from hopper to obstacle in the x-axis
+        # Calculate distance from hopper to obstacle in the x-axis.
+        # (not a true distance, as it can be negative
+        # it can be seen as a relative position of the Hopper w.r.t the obstacle)
         distance_to_obstacle = obstacle_pos[0] - hopper_pos[0]
 
         # Append this distance to the state observation
@@ -98,6 +102,7 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         self.set_state(qpos, qvel)
 
         return self._get_obs()
+
 
     def viewer_setup(self):
         self.viewer.cam.trackbodyid = 2
@@ -152,18 +157,3 @@ gym.envs.register(
         max_episode_steps=500,
         kwargs={"domain": "target"}
 )
-
-gym.envs.register(
-        id="CustomHopper-source-random-v0",
-        entry_point="%s:CustomHopper" % __name__,
-        max_episode_steps=500,
-        kwargs={"domain": "source", "random": True}
-)
-
-'''
-gym.envs.register(
-        id="CustomHopper-target-random-v0",
-        entry_point="%s:CustomHopper" % __name__,
-        max_episode_steps=500,
-        kwargs={"domain": "target", "random": True}
-)'''

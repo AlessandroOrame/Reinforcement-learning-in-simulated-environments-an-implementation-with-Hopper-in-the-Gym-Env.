@@ -12,7 +12,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', default='modelPPO', type=str, help='Model path')
     parser.add_argument('--device', default='cpu', type=str, help='network device [cpu, cuda]')
-    parser.add_argument('--render', default=False, action='store_true', help='Render the simulator')
+    parser.add_argument('--render', default=True, action='store_true', help='Render the simulator')
     parser.add_argument('--episodes', default=100, type=int, help='Number of test episodes')
     parser.add_argument('--test', default='target', type=str, help='Testing environment')
 
@@ -44,8 +44,8 @@ def main():
         print(f"Episode: {episode} | Return: {test_return}")
         returns[episode] = test_return
     
-    mean_reward = np.mean(returns)
-    print(f"Mean reward on test episodes is:{mean_reward}")
+    mean_return = np.mean(returns)
+    print(f"Mean reward on test episodes is:{mean_return}")
 	
 
 if __name__ == '__main__':

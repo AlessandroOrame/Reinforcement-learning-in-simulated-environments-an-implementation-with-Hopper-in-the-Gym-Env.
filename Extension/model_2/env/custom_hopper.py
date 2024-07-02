@@ -10,30 +10,12 @@ from gymnasium import utils
 from .mujoco_env import MujocoEnv
 
 class CustomHopper(MujocoEnv, utils.EzPickle):
-    def __init__(self, domain=None, random=False):
+    def __init__(self, domain=None):
         MujocoEnv.__init__(self, 4)
         utils.EzPickle.__init__(self)
 
         self.original_masses = np.copy(self.sim.model.body_mass[1:])  # Default link masses
         self.sim.model.body_mass[1] -= 1.0 
-
-        self.random = random
-        
-        # set obstacles positions
-        obstacle1_body_id = self.sim.model.body_name2id('obstacle1')
-        obstacle1_pos = self.sim.model.body_pos[obstacle1_body_id].copy()
-        obstacle1_pos[0] = 4
-        self.sim.model.body_pos[obstacle1_body_id] = obstacle1_pos
-
-        obstacle2_body_id = self.sim.model.body_name2id('obstacle2')
-        obstacle2_pos = self.sim.model.body_pos[obstacle2_body_id].copy()
-        obstacle2_pos[0] = 8.5
-        self.sim.model.body_pos[obstacle2_body_id] = obstacle2_pos
-
-        obstacle3_body_id = self.sim.model.body_name2id('obstacle3')
-        obstacle3_pos = self.sim.model.body_pos[obstacle3_body_id].copy()
-        obstacle3_pos[0] = 13
-        self.sim.model.body_pos[obstacle3_body_id] = obstacle3_pos
         
 
     def get_parameters(self):
@@ -76,9 +58,24 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         """Reset the environment to a random initial state"""
         qpos = self.init_qpos + self.np_random.uniform(low=-.005, high=.005, size=self.model.nq)
         qvel = self.init_qvel + self.np_random.uniform(low=-.005, high=.005, size=self.model.nv)
+        
+        # set obstacles positions
+        obstacle1_body_id = self.sim.model.body_name2id('obstacle1')
+        obstacle1_pos = self.sim.model.body_pos[obstacle1_body_id].copy()
+        obstacle1_pos[0] = 4
+        self.sim.model.body_pos[obstacle1_body_id] = obstacle1_pos
+
+        obstacle2_body_id = self.sim.model.body_name2id('obstacle2')
+        obstacle2_pos = self.sim.model.body_pos[obstacle2_body_id].copy()
+        obstacle2_pos[0] = 8.5
+        self.sim.model.body_pos[obstacle2_body_id] = obstacle2_pos
+
+        obstacle3_body_id = self.sim.model.body_name2id('obstacle3')
+        obstacle3_pos = self.sim.model.body_pos[obstacle3_body_id].copy()
+        obstacle3_pos[0] = 13
+        self.sim.model.body_pos[obstacle3_body_id] = obstacle3_pos
+
         self.set_state(qpos, qvel)
-        if self.random == True:    
-            self.set_random_parameters()  # Apply randomization at the start of each episode
         return self._get_obs()
     
 
@@ -136,17 +133,3 @@ gym.envs.register(
         kwargs={"domain": "target"}
 )
 
-gym.envs.register(
-        id="CustomHopper-source-random-v0",
-        entry_point="%s:CustomHopper" % __name__,
-        max_episode_steps=500,
-        kwargs={"domain": "source", "random": True}
-)
-
-'''
-gym.envs.register(
-        id="CustomHopper-target-random-v0",
-        entry_point="%s:CustomHopper" % __name__,
-        max_episode_steps=500,
-        kwargs={"domain": "target", "random": True}
-)'''

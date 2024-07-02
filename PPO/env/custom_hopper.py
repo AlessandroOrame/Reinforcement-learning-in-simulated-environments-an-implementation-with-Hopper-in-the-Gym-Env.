@@ -4,7 +4,6 @@ domain randomization optimization.
     See more at: https://www.gymlibrary.dev/environments/mujoco/hopper/
 """
 from copy import deepcopy
-
 import numpy as np
 import gym
 from gym import utils
@@ -23,7 +22,7 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         
         self.random = random 
         if self.random:    
-            # Define mass ranges for the thigh, leg, and foot links #TODO
+            # Define mass ranges for the thigh, leg, and foot links 
             self.mass_ranges = {
                 'thigh': (self.original_masses[1] - 0.5, self.original_masses[1] + 0.5),
                 'leg': (self.original_masses[2] - 0.5, self.original_masses[2] + 0.5),
@@ -39,8 +38,8 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         """Sample masses according to a domain randomization distribution"""
         
         #
-        # TASK 6: implement domain randomization. Remember to sample new dynamics parameter
-        #         at the start of each training episode.
+        # Implement domain randomization. Sample new dynamics parameter
+        # at the start of each training episode.
 
         # Sample new masses from the defined ranges 
         new_masses = np.array([
@@ -168,11 +167,3 @@ gym.envs.register(
         max_episode_steps=500,
         kwargs={"domain": "source", "random": True}
 )
-
-'''
-gym.envs.register(
-        id="CustomHopper-target-random-v0",
-        entry_point="%s:CustomHopper" % __name__,
-        max_episode_steps=500,
-        kwargs={"domain": "target", "random": True}
-)'''

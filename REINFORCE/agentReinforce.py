@@ -72,7 +72,6 @@ class Agent(object):
         action_log_probs = torch.stack(self.action_log_probs, dim=0).to(self.train_device).squeeze(-1)
         rewards = torch.stack(self.rewards, dim=0).to(self.train_device).squeeze(-1)
 
-        # TASK 2:
         #   - compute discounted returns
         #   - compute policy gradient loss function given actions and returns
         #   - compute gradients and step the optimizer

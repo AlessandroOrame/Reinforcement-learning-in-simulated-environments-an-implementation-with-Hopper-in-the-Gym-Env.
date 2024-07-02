@@ -10,13 +10,13 @@ from gymnasium import utils
 from .mujoco_env import MujocoEnv
 
 class CustomHopper(MujocoEnv, utils.EzPickle):
-    def __init__(self, domain=None, random=False):
+    def __init__(self, domain=None):
         MujocoEnv.__init__(self, 4)
         utils.EzPickle.__init__(self)
 
         self.original_masses = np.copy(self.sim.model.body_mass[1:])    # Default link masses
         self.sim.model.body_mass[1] -= 1.0 
-        
+
 
     def get_parameters(self):
         """Get value of mass for each link"""
@@ -44,6 +44,7 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
         ob = self._get_obs()
 
         return ob, reward, done, {}
+
 
     def _get_obs(self):
         """Get current state"""
@@ -81,8 +82,9 @@ class CustomHopper(MujocoEnv, utils.EzPickle):
 
         # Set the new state including the updated obstacle position
         self.set_state(qpos, qvel)
-        
+
         return self._get_obs()
+
 
     def viewer_setup(self):
         self.viewer.cam.trackbodyid = 2
@@ -137,18 +139,3 @@ gym.envs.register(
         max_episode_steps=500,
         kwargs={"domain": "target"}
 )
-
-gym.envs.register(
-        id="CustomHopper-source-random-v0",
-        entry_point="%s:CustomHopper" % __name__,
-        max_episode_steps=500,
-        kwargs={"domain": "source", "random": True}
-)
-
-'''
-gym.envs.register(
-        id="CustomHopper-target-random-v0",
-        entry_point="%s:CustomHopper" % __name__,
-        max_episode_steps=500,
-        kwargs={"domain": "target", "random": True}
-)'''

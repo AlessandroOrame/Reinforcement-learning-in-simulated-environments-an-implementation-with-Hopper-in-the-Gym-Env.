@@ -38,7 +38,7 @@ class CustomEvalCallback(BaseCallback):
             os.makedirs(os.path.dirname(self.log_path), exist_ok=True)
             with open(self.log_path, mode='w', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(["Episode", "Reward"])
+                writer.writerow(["Episode", "Return"])
 
     def _on_step(self) -> bool:
         # Check if an episode is done
